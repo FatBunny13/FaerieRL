@@ -4,7 +4,7 @@ from enum import Enum
 
 from game_states import GameStates
 
-from menus import character_screen, inventory_menu, level_up_menu,race_select_menu,skill_menu
+from menus import character_screen, inventory_menu, level_up_menu,race_select_menu,skill_menu,job_selection_menu,job_screen
 
 
 class RenderOrder(Enum):
@@ -81,6 +81,8 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
 
     render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp,
                libtcod.light_red, libtcod.darker_red)
+    render_bar(panel, 1, 2, bar_width, 'Mana', player.fighter.mana, player.fighter.max_mana,
+               libtcod.light_blue, libtcod.darker_blue)
     libtcod.console_print_ex(panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
                              'Dungeon level: {0}'.format(game_map.dungeon_level))
     libtcod.console_print_ex(panel, 1, 4, libtcod.BKGND_NONE, libtcod.LEFT,
@@ -106,7 +108,7 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
         level_up_menu(con, 'Level up! Choose a stat to raise:', player, 40, screen_width, screen_height)
 
     elif game_state == GameStates.CHARACTER_SCREEN:
-        character_screen(player, 30, 10, screen_width, screen_height)
+        character_screen(player, 30, 11, screen_width, screen_height)
 
     elif game_state == GameStates.RACE_SELECTION:
         race_select_menu(con, 'What is your race?', player, 40, screen_width,screen_height)
@@ -114,6 +116,11 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
     elif game_state == GameStates.SKILL_SELECTION:
         skill_menu(con, 'What skill would you like to use?', player, 40, screen_width, screen_height)
 
+    elif game_state == GameStates.CLASS_SELECTION:
+        job_selection_menu(con, 'What class do you want to level in?', player, 40, screen_width, screen_height)
+
+    elif game_state == GameStates.JOB_MENU:
+        job_screen(player, 30, 10, screen_width, screen_height)
 
 def clear_all(con, entities):
     for entity in entities:

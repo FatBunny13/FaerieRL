@@ -19,6 +19,18 @@ class Equipment:
         return bonus
 
     @property
+    def max_mana_bonus(self):
+        bonus = 0
+
+        if self.main_hand and self.main_hand.equippable:
+            bonus += self.main_hand.equippable.max_mana_bonus
+
+        if self.off_hand and self.off_hand.equippable:
+            bonus += self.off_hand.equippable.max_mana_bonus
+
+        return bonus
+
+    @property
     def power_bonus(self):
         bonus = 0
 
@@ -43,14 +55,38 @@ class Equipment:
         return bonus
 
     @property
-    def will_bonus(self):
+    def accuracy_bonus(self):
         bonus = 0
 
         if self.main_hand and self.main_hand.equippable:
-            bonus += self.main_hand.equippable.will_bonus
+            bonus += self.main_hand.equippable.accuracy_bonus
 
         if self.main_hand and self.main_hand.equippable:
-            bonus += self.main_hand.equippable.will_bonus
+            bonus += self.main_hand.equippable.accuracy_bonus
+
+        return bonus
+
+    @property
+    def constitution_bonus(self):
+        bonus = 0
+
+        if self.main_hand and self.main_hand.equippable:
+            bonus += self.main_hand.equippable.constitution_bonus
+
+        if self.main_hand and self.main_hand.equippable:
+            bonus += self.main_hand.equippable.constitution_bonus
+
+        return bonus
+
+    @property
+    def willpower_bonus(self):
+        bonus = 0
+
+        if self.main_hand and self.main_hand.equippable:
+            bonus += self.main_hand.equippable.willpower_bonus
+
+        if self.main_hand and self.main_hand.equippable:
+            bonus += self.main_hand.equippable.willpower_bonus
 
         return bonus
 

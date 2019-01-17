@@ -13,3 +13,4 @@ class GameStates(Enum):
     RACE_SELECTION = 9
     CLASS_SELECTION = 10
     SKILL_SELECTION = 11
+    JOB_MENU = 12

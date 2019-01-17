@@ -11,7 +11,7 @@ from loader_functions.data_loaders import load_game, save_game
 from menus import main_menu, message_box
 from render_functions import clear_all, render_all
 from components.skill import Skill
-from item_functions import become_graceful,become_accurate
+from item_functions import become_graceful,become_accurate,poison_bite,acid_spit,throw_mudball
 
 
 def play_game(player, entities, game_map, message_log, game_state, con, panel, constants):
@@ -57,10 +57,12 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         skills_index = action.get('skill_index')
         take_stairs = action.get('take_stairs')
         level_up = action.get('level_up')
+        job = action.get('job')
         show_character_screen = action.get('show_character_screen')
         race = action.get('race')
         exit = action.get('exit')
         fullscreen = action.get('fullscreen')
+        job_menu = action.get('job_menu')
 
         left_click = mouse_action.get('left_click')
         right_click = mouse_action.get('right_click')
@@ -109,6 +111,9 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             previous_game_state = game_state
             game_state = GameStates.SHOW_INVENTORY
 
+        if job_menu:
+            game_state = GameStates.JOB_MENU
+
         if see_skills:
             previous_game_state = game_state
             game_state = GameStates.SKILL_SELECTION
@@ -131,7 +136,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             item = player.skills.skills[skills_index]
 
             if game_state == GameStates.SKILL_SELECTION:
-                player_turn_results.extend(player.inventory.use(item, entities=entities, fov_map=fov_map))
+                player_turn_results.extend(player.skills.use(item, entities=entities, fov_map=fov_map))
 
         if take_stairs and game_state == GameStates.PLAYERS_TURN:
             for entity in entities:
@@ -160,25 +165,40 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 player.fighter.base_power += 1
             elif level_up == 'def':
                 player.fighter.base_defense += 1
-
-            game_state = previous_game_state
+            game_state = GameStates.CLASS_SELECTION
 
         if show_character_screen:
             previous_game_state = game_state
             game_state = GameStates.CHARACTER_SCREEN
 
+        if job:
+            if job == 'cleric':
+                player.fighter.job.cleric_level += 1
+            elif job == 'fighter':
+                player.fighter.job.fighter_level += 1
+            elif job == 'thief':
+                player.fighter.job.thief_level += 1
+            elif job == 'wizard':
+                player.fighter.job.wizard_level += 1
+
+            game_state = previous_game_state
         if game_state == GameStates.TARGETING:
             if left_click:
                 target_x, target_y = left_click
-
-                item_use_results = player.inventory.use(targeting_item, entities=entities, fov_map=fov_map,
+                if targeting_item.skill:
+                    item_use_results = player.skills.use(targeting_item, entities=entities, fov_map=fov_map,
+                                                            target_x=target_x, target_y=target_y)
+                else:
+                    item_use_results = player.inventory.use(targeting_item, entities=entities, fov_map=fov_map,
                                                         target_x=target_x, target_y=target_y)
                 player_turn_results.extend(item_use_results)
             elif right_click:
                 player_turn_results.append({'targeting_cancelled': True})
 
         if exit:
-            if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN,GameStates.SKILL_SELECTION):
+            if game_state == GameStates.JOB_MENU:
+                game_state = GameStates.CHARACTER_SCREEN
+            elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN,GameStates.SKILL_SELECTION):
                 game_state = previous_game_state
             elif game_state == GameStates.TARGETING:
                 player_turn_results.append({'targeting_cancelled': True})
@@ -198,6 +218,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             item_dropped = player_turn_result.get('item_dropped')
             equip = player_turn_result.get('equip')
             targeting = player_turn_result.get('targeting')
+            skill_targeting = player_turn_result.get('skill_targeting')
             targeting_cancelled = player_turn_result.get('targeting_cancelled')
             xp = player_turn_result.get('xp')
 
@@ -248,6 +269,14 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
                 message_log.add_message(targeting_item.item.targeting_message)
 
+            if skill_targeting:
+                previous_game_state = GameStates.PLAYERS_TURN
+                game_state = GameStates.TARGETING
+
+                targeting_item = skill_targeting
+
+                message_log.add_message(targeting_item.skill.targeting_message)
+
             if targeting_cancelled:
                 game_state = previous_game_state
 
@@ -269,17 +298,14 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             elif race == 'elf':
                 player.fighter.race = 'Elf'
                 player.fighter.base_defense += 2
-                player.fighter.max_hp -= 20
                 player.fighter.base_constitution -= 2
             elif race == 'dwarf':
                 player.fighter.race = 'Dwarf'
                 player.fighter.base_defense -= 2
-                player.fighter.max_hp += 20
                 player.fighter.base_constitution += 2
             elif race == 'halfling':
                 player.fighter.race = 'Halfling'
                 player.fighter.base_defense += 4
-                player.fighter.max_hp -= 10
                 player.fighter.base_power -= 3
                 player.fighter.base_constitution -= 1
             elif race == 'gnome':
@@ -289,6 +315,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 player.fighter.base_power -= 4
             elif race == 'draconian':
                 player.fighter.race = 'Draconian'
+                player.fighter.large = True
                 player.fighter.base_constitution += 3
                 player.fighter.base_defense -= 4
                 player.fighter.base_power += 3
@@ -316,8 +343,14 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 player.fighter.base_defense -= 12
                 player.fighter.base_power += 3
                 player.fighter.large = True
+                player.fighter.cant_wear_armour = True
             elif race == 'lizard':
                 player.fighter.race = 'Lizardperson'
+                skill_component = Skill(use_function=acid_spit, targeting=True, targeting_message=Message(
+                        'Left-click a target tile for the spit, or right-click to cancel.', libtcod.light_cyan),
+                                          damage=25)
+                skill = Skill_Entity('Acid Spit',skill=skill_component)
+                player.skills.add_skill(skill)
                 player.fighter.base_defense -= 2
                 player.fighter.base_power += 3
             elif race == 'frog':
@@ -338,6 +371,8 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 player.fighter.base_defense -= 7
                 player.fighter.base_power += 4
                 player.fighter.base_constitution += 2
+                player.fighter.large = True
+                player.fighter.carnivore = True
                 player.fighter.sharp_claws = True
             elif race == 'skeleton':
                 player.fighter.race = 'Skeleton'
@@ -348,25 +383,25 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 player.fighter.race = 'Biter'
                 player.fighter.base_constitution -= 2
                 player.fighter.base_defense += 4
+                player.player.fighter.sharp_claws = True
             elif race == 'kobold':
                 player.fighter.race = 'Kobold'
                 player.fighter.base_power -= 3
                 player.fighter.base_defense += 3
-            elif race == 'kobold':
-                player.fighter.race = 'Kobold'
-                player.fighter.base_power -= 3
-                player.fighter.base_defense += 3
+                player.fighter.large = True
             elif race == 'chaosling':
                 player.fighter.race = 'chaosling'
                 player.fighter.base_power += 2
                 player.fighter.base_defense += 2
                 player.fighter.base_constitution += 2
                 player.fighter.base_willpower -= 6
+                player.fighter.hates_law = True
             elif race == 'reaper':
                 player.fighter.race = 'Reaper'
                 player.fighter.base_power += 4
                 player.fighter.base_constitution += 2
                 player.fighter.base_willpower -= 10
+                player.fighter.bloodthirsty = True
             elif race == 'nymph':
                 player.fighter.race = 'Nymph'
                 player.fighter.base_power -= 5
@@ -374,29 +409,45 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             elif race == 'octopode':
                 player.fighter.race = 'Octopode'
                 player.fighter.base_defense += 3
+                player.fighter.eight_arms = True
+                player.fighter.cant_wear_armour = True
             elif race == 'cat':
                 player.fighter.race = 'Housecat'
                 player.fighter.base_defense += 6
                 player.fighter.base_constitution -= 3
             elif race == 'merfolk':
                 player.fighter.race = 'Merfolk'
+                player.fighter.swimmer = True
                 player.fighter.base_defense += 3
                 player.fighter.base_constitution += 3
                 player.fighter.base_power -= 4
             elif race == 'mud':
                 player.fighter.race = 'Mud Man'
+                skill_component = Skill(use_function=throw_mudball, targeting=True, targeting_message=Message(
+                    'Left-click a target tile for the ball, or right-click to cancel.', libtcod.light_cyan),
+                                        damage=25)
+                skill = Skill_Entity('Throw Mudball', skill=skill_component)
+                player.skills.add_skill(skill)
                 player.fighter.base_defense += 3
                 player.fighter.base_constitution -= 3
             elif race == 'dryad':
                 player.fighter.race = 'Dryad'
+                player.fighter.one_with_nature = True
                 player.fighter.base_power += 4
                 player.fighter.base_defence -= 4
             elif race == 'naga':
                 player.fighter.race = 'Naga'
+                skill_component = Skill(use_function=poison_bite, targeting=True, targeting_message=Message(
+                    'Left-click a target tile for the bite, or right-click to cancel.', libtcod.light_cyan),
+                                        damage=25)
+                skill = Skill_Entity('Naga Bite', skill=skill_component)
+                player.skills.add_skill(skill)
                 player.fighter.base_defense += 4
                 player.fighter.base_power -= 4
+                player.fighter.no_legs = True
             elif race == 'golem':
                 player.fighter.race = 'Rogue Golem'
+                player.fighter.golem = True
                 player.fighter.base_defense += 10
                 player.fighter.base_power += 10
                 player.fighter.base_willpower += 13

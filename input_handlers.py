@@ -14,10 +14,12 @@ def handle_keys(key, game_state):
         return handle_inventory_keys(key)
     elif game_state == GameStates.LEVEL_UP:
         return handle_level_up_menu(key)
-    elif game_state == GameStates.CHARACTER_SCREEN:
+    elif game_state in (GameStates.CHARACTER_SCREEN,GameStates.JOB_MENU):
         return handle_character_screen(key)
     elif game_state == GameStates.RACE_SELECTION:
         return handle_race_selection(key)
+    elif game_state == GameStates.CLASS_SELECTION:
+        return handle_class_selection(key)
     elif game_state == GameStates.SKILL_SELECTION:
         return handle_skill_keys(key)
 
@@ -143,6 +145,20 @@ def handle_main_menu(key):
 
     return {}
 
+def handle_class_selection(key):
+    if key:
+        key_char = chr(key.c)
+
+        if key_char == 'a':
+            return {'job': 'fighter'}
+        elif key_char == 'b':
+            return {'job': 'wizard'}
+        elif key_char == 'c':
+            return {'job': 'thief'}
+        elif key_char == 'd':
+            return {'job': 'cleric'}
+
+    return {}
 def handle_race_selection(key):
     if key:
         key_char = chr(key.c)
@@ -222,6 +238,10 @@ def handle_level_up_menu(key):
 
 
 def handle_character_screen(key):
+    key_char = chr(key.c)
+
+    if key_char == 'i':
+        return {'job_menu': True}
     if key.vk == libtcod.KEY_ESCAPE:
         return {'exit': True}
 

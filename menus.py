@@ -16,7 +16,7 @@ def menu(con, header, options, width, screen_width, screen_height):
 
     # print all the options
     y = header_height
-    letter_index = ord('a')
+    letter_index = ord('A')
     for option_text in options:
         text = '(' + chr(letter_index) + ') ' + option_text
         libtcod.console_print_ex(window, 0, y, libtcod.BKGND_NONE, libtcod.LEFT, text)
@@ -88,12 +88,12 @@ def race_select_menu(con, header, player, menu_width, screen_width, screen_heigh
                '(h)Goblin (+2 agility, +1 willpower, -3 strength)'.format(player.fighter.defense),
                '(i)Fairy (+6 agility, -6 strength, -6 constitution, Can use a dance that gives them multiple attacks,too small for armour)'.format(player.fighter.defense),
                '(j)Giant Turtle (+8 constitution, +3 strength, -12 agility, too big for most armour.)'.format(player.fighter.defense),
-               '(k)Lizardperson (+3 strength, -2 agility, Can spit acid)'.format(player.fighter.defense),
-               '(l)Frogperson (+3 agility, -2 strength, Can cover themselves in slime that makes them able to dodge attacks more easily)'.format(player.fighter.defense),
+               '(k)Lizardfolk (+3 strength, -2 agility, Can spit acid)'.format(player.fighter.defense),
+               '(l)Frogfolk (+3 agility, -2 strength, Can cover themselves in slime that makes them able to dodge attacks more easily)'.format(player.fighter.defense),
                '(m)Giant (+5 strength, +5 constitution, -7 agility, too big for most armours.)'.format(player.fighter.defense),
                '(n)Troll (+4 strength, +2 constitution, -7 agility, too big for most armours, Carnivores, Sharp claws.)'.format(player.fighter.defense),
                '(o)Skeleton (+1 strength, +1 constitution, Can create a shield of bones to protect themselves)'.format(player.fighter.defense),
-               '(p)Biter (+4 agility, -2 constitution, They are extra skilled at wrestiling, But they lack arms '.format(player.fighter.defense),
+               '(p)Biter (+4 agility, -2 constitution, They have sharp teeth, But they lack arms '.format(player.fighter.defense),
                '(q)Kobold (+3 agility, -3 strength, carnivorous, and very small)'.format(player.fighter.defense),
                '(r)Chaosling (+2 strength, +2 constitution, +2 strength, -6 willpower, The very idea of lawfulness hurts them.)'.format(player.fighter.defense),
                '(s)Reaper (+4 strength, +2 constitution, -10 willpower, has to kill enemies or they will die)'.format(player.fighter.defense),
@@ -141,6 +141,24 @@ def character_screen(player, character_screen_width, character_screen_height, sc
                                   libtcod.LEFT, 'AC: {0}'.format(player.fighter.ac))
     libtcod.console_print_rect_ex(window, 0, 10, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
                                   libtcod.LEFT, 'Will: {0}'.format(player.fighter.will))
+
+    x = screen_width // 2 - character_screen_width // 2
+    y = screen_height // 2 - character_screen_height // 2
+    libtcod.console_blit(window, 0, 0, character_screen_width, character_screen_height, 0, x, y, 1.0, 0.7)
+
+def job_screen(player, character_screen_width, character_screen_height, screen_width, screen_height):
+    window = libtcod.console_new(character_screen_width, character_screen_height)
+
+    libtcod.console_set_default_foreground(window, libtcod.white)
+
+    libtcod.console_print_rect_ex(window, 0, 2, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                  libtcod.LEFT, 'Level in Fighter: {0}'.format(player.fighter.job.fighter_level))
+    libtcod.console_print_rect_ex(window, 0, 3, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                  libtcod.LEFT, 'Levels in Magician: {0}'.format(player.fighter.job.magician_level))
+    libtcod.console_print_rect_ex(window, 0, 4, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                  libtcod.LEFT, 'Levels in Cleric: {0}'.format(player.fighter.job.cleric_level))
+    libtcod.console_print_rect_ex(window, 0, 5, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                  libtcod.LEFT, 'Levels in Thief: {0}'.format(player.fighter.job.thief_level))
 
     x = screen_width // 2 - character_screen_width // 2
     y = screen_height // 2 - character_screen_height // 2

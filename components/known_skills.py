@@ -31,10 +31,10 @@ class Skills:
         skill_component = skill_entity.skill
 
         if skill_component.targeting and not (kwargs.get('target_x') or kwargs.get('target_y')):
-                results.append({'targeting': skill_entity})
+                results.append({'skill_targeting': skill_entity})
         else:
                 kwargs = {**skill_component.function_kwargs, **kwargs}
-                item_use_results = skill_component.use_function(self.owner, **kwargs)
+                item_use_results = skill_component.use_function(self, **kwargs)
 
                 results.extend(item_use_results)
 

@@ -158,14 +158,14 @@ class GameMap:
 
                 if monster_choice == 'orc':
                     status_component = Status_Effects()
-                    fighter_component = Fighter(hp=20, defense=0, power=4, xp=35,constitution=10,willpower=10,status_effects=status_component)
+                    fighter_component = Fighter(hp=20,mana=0, defense=0, power=4,attack_dice_minimum=1,attack_dice_maximum=4, xp=3005,constitution=10,willpower=10,status_effects=status_component)
                     ai_component = BasicMonster()
 
                     monster = Entity(x, y, 'o', libtcod.desaturated_green, 'Orc', blocks=True,
                                      render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
                 else:
                     status_component = Status_Effects()
-                    fighter_component = Fighter(hp=30, defense=2, power=8, xp=100,constitution=10,willpower=10,status_effects=status_component)
+                    fighter_component = Fighter(hp=30,mana=0, defense=2, power=8,attack_dice_minimum=1,attack_dice_maximum=4, xp=100,constitution=10,willpower=10,status_effects=status_component)
                     ai_component = BasicMonster()
 
                     monster = Entity(x, y, 'T', libtcod.darker_green, 'Troll', blocks=True, fighter=fighter_component,

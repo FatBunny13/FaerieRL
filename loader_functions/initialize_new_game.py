@@ -2,7 +2,7 @@ import libtcodpy as libtcod
 
 from components.equipment import Equipment
 from components.equippable import Equippable
-from components.fighter import Fighter, Status_Effects
+from components.fighter import Fighter, Status_Effects,Jobs
 from components.inventory import Inventory
 from components.level import Level
 from components.known_skills import Skills
@@ -83,12 +83,13 @@ def get_constants():
 
 def get_game_variables(constants):
     status_component = Status_Effects()
-    fighter_component = Fighter(hp=100, defense=1, power=2,constitution=10,willpower=10,status_effects=status_component,nutrition=500,ac=1,will=1)
+    job_component = Jobs()
+    fighter_component = Fighter(hp=100,mana=50, defense=1, power=2,attack_dice_minimum=1,attack_dice_maximum=4,constitution=10,willpower=10,status_effects=status_component,job=job_component,nutrition=500,ac=1,accuracy=1)
     inventory_component = Inventory(26)
     level_component = Level()
     equipment_component = Equipment()
     skill_component = Skills(50)
-    player = Entity(0, 0, '@', libtcod.white, 'Player', blocks=True, render_order=RenderOrder.ACTOR,
+    player = Entity(0, 0, '@', libtcod.white, 'Player', blocks=True,player=True, render_order=RenderOrder.ACTOR,
                     fighter=fighter_component, inventory=inventory_component, level=level_component,
                     equipment=equipment_component,skills=skill_component)
     entities = [player]
